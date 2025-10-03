@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../services/api";
+import { getAllMeasurements, getMeasurementsByUser } from "../services/measurements";
 
 interface Measurement {
   id: number;
@@ -12,8 +12,19 @@ function History() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await api.get("/glucose/history");
-      setMeasurements(res.data);
+      // Obtén el usuario logueado desde localStorage/context
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      // Si es admin (user_type_id === 1), muestra todas las mediciones
+      if (user && user.user_type_id === 1) {
+        const res = await getAllMeasurements();
+        setMeasurements(res.data);
+      } else if (user) {
+        // Si es usuario normal, muestra solo sus mediciones
+        const res = await getMeasurementsByUser(user.id);
+        setMeasurements(res.data);
+      } else {
+        setMeasurements([]);
+      }
     };
     fetchData();
   }, []);

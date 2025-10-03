@@ -1,19 +1,34 @@
 
 import { useState } from "react";
-import api from "../services/api";
+import { login } from "../services/auth";
 
+// Componente de Login preparado para integración con el backend
+// Solo actualiza la función handleLogin cuando el endpoint esté disponible
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  // Cuando el backend tenga el endpoint de login, actualiza la ruta y los datos aquí
+  // Ejemplo recomendado:
+  // const res = await api.post("/user/login", { email: username, password });
+  // localStorage.setItem("token", res.data.token);
+  // Redirige al dashboard o guarda el usuario en contexto
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await api.post("/auth/login", { username, password });
-      localStorage.setItem("token", res.data.token);
-      alert("Bienvenido " + res.data.user.name);
-    } catch (error) {
-      alert("Error al iniciar sesión");
+    // Simulación de login para desarrollo
+    // Puedes cambiar los datos simulados según tus usuarios admin reales
+    const mockUser = {
+      id: 1,
+      name: "Admin",
+      user_type_id: 1,
+      email: username,
+    };
+    localStorage.setItem("token", "mock-token");
+    localStorage.setItem("user", JSON.stringify(mockUser));
+    if (mockUser.user_type_id === 1) {
+      window.location.href = "/register";
+    } else {
+      window.location.href = "/dashboard";
     }
   };
 
@@ -38,6 +53,7 @@ function Login() {
               <label className="block text-primary-dark font-medium mb-1" htmlFor="email">
                 Correo electrónico*
               </label>
+              {/* Usa el campo email para el login, puedes cambiar a username si el backend lo requiere */}
               <input
                 id="email"
                 type="email"
@@ -52,6 +68,7 @@ function Login() {
               <label className="block text-primary-dark font-medium mb-1" htmlFor="password">
                 Contraseña*
               </label>
+              {/* Campo de contraseña, asegúrate de enviar el valor correcto al backend */}
               <input
                 id="password"
                 type="password"

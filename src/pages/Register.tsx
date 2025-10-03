@@ -1,15 +1,21 @@
-import { useState, useEffect } from "react";
-import api from "../services/api";
-import { getUsers } from "../services/users";
+// ...existing code...
+import { useState, useEffect, useMemo } from "react";
+import { getUserTypes, getUserStatus } from "../services/userTypeStatus";
+import Confetti from "react-confetti";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { getUsers, createUser, updateUser, deactivateUser } from "../services/users";
 
 const initialForm = {
-  name: "",
-  lastName: "",
+  name: "", 
+  last_name: "",
+  username: "",
+  email: "",
+  password: "",
+  user_type_id: "",
+  user_status_id: "",
   age: "",
   sex: "",
-  email: "",
-  userStatus: "",
-  userType: "",
 };
 
 function Register() {
@@ -19,12 +25,39 @@ function Register() {
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [editUser, setEditUser] = useState<any | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [userTypes, setUserTypes] = useState<any[]>([]);
+  const [userStatus, setUserStatus] = useState<any[]>([]);
+  const [showConfetti, setShowConfetti] = useState(false);
+  // Sugerencia automática para username
+  const usernameSuggestion = useMemo(() => {
+    const name = formData.name.trim().toLowerCase().replace(/\s+/g, "");
+    const lastName = formData.last_name.trim().toLowerCase().replace(/\s+/g, "");
+    if (name && lastName) {
+      return `${name}.${lastName}`;
+    }
+    return "";
+  }, [formData.name, formData.last_name]);
+  // Consultar tipos y estados de usuario
+  useEffect(() => {
+    const fetchTypesAndStatus = async () => {
+      try {
+        const typesRes = await getUserTypes();
+        setUserTypes(typesRes.data);
+        const statusRes = await getUserStatus();
+        setUserStatus(statusRes.data);
+      } catch (err) {
+        setUserTypes([]);
+        setUserStatus([]);
+      }
+    };
+    fetchTypesAndStatus();
+  }, []);
   // const [confirmDelete, setConfirmDelete] = useState<{ user: any; open: boolean }>({ user: null, open: false });
 
   const fetchUsers = async () => {
     try {
-      const data = await getUsers();
-      setUsers(data);
+      const response = await getUsers();
+      setUsers(response.data);
     } catch (err) {
       setUsers([]);
     }
@@ -32,21 +65,20 @@ function Register() {
 
   // Eliminar usuario
   const handleDelete = async (userId: number) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este usuario?")) return;
+    if (!window.confirm("¿Seguro que deseas desactivar este usuario?")) return;
     try {
-      await api.delete(`/users/${userId}`);
+      await deactivateUser({ id: userId });
       await fetchUsers();
+      toast.success("Usuario desactivado correctamente ✅", { position: "top-center", autoClose: 2500 });
     } catch (err) {
-      alert("Error al eliminar usuario");
+      toast.error("Error al desactivar usuario ❌", { position: "top-center", autoClose: 2500 });
     }
   };
 
   // Activar/desactivar usuario
   const handleToggleStatus = async (user: any) => {
     try {
-      await api.patch(`/users/${user.id}/status`, {
-        status: user.userStatus === "Activo" ? "Desactivado" : "Activo",
-      });
+      await deactivateUser(user.id);
       await fetchUsers();
     } catch (err) {
       alert("Error al cambiar estado");
@@ -76,11 +108,23 @@ function Register() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.put(`/users/${editUser.id}`, editUser);
+      await updateUser({
+        id: editUser.id,
+        name: editUser.name,
+        last_name: editUser.last_name,
+        username: editUser.username,
+        email: editUser.email,
+        user_type_id: Number(editUser.user_type_id),
+        user_status_id: Number(editUser.user_status_id),
+        age: Number(editUser.age),
+        sex: editUser.sex,
+        password: editUser.password || "", // Opcional
+      });
       closeEditModal();
       await fetchUsers();
+      toast.success("Usuario editado correctamente ✅", { position: "top-center", autoClose: 2500 });
     } catch (err) {
-      alert("Error al editar usuario");
+      toast.error("Error al editar usuario ❌", { position: "top-center", autoClose: 2500 });
     }
   };
 
@@ -113,14 +157,36 @@ function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Aquí deberías mapear los campos a los nombres esperados por el backend/modelo ER
     try {
-      await api.post("/users/register", formData);
-      alert("Usuario registrado correctamente ✅");
+      await createUser({
+        name: formData.name,
+        last_name: formData.last_name,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        user_type_id: Number(formData.user_type_id),
+        user_status_id: Number(formData.user_status_id),
+        age: Number(formData.age),
+        sex: formData.sex,
+      });
+      setShowConfetti(true);
+      toast.success("Usuario registrado correctamente ✅", { position: "top-center", autoClose: 2500 });
+      setTimeout(() => setShowConfetti(false), 3000);
       setFormData(initialForm);
       fetchUsers();
-    } catch (err) {
-      alert("Error al registrar usuario ❌");
+    } catch (err: any) {
+      // Mejorar alerta para duplicados
+      let errorMsg = "Error al registrar usuario ❌";
+      if (err?.response?.data?.message) {
+        if (err.response.data.message.includes("correo")) {
+          errorMsg = "El correo electrónico ya está registrado ❌";
+        } else if (err.response.data.message.includes("usuario")) {
+          errorMsg = "El nombre de usuario ya está registrado ❌";
+        } else {
+          errorMsg = err.response.data.message;
+        }
+      }
+      toast.error(errorMsg, { position: "top-center", autoClose: 3500 });
     }
   };
 
@@ -132,11 +198,9 @@ function Register() {
             Registro de usuarios
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-2">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-2">
               <div>
-                <label className="block text-primary-dark font-semibold mb-2">
-                  Nombres
-                </label>
+                <label className="block text-primary-dark font-semibold mb-2">Nombres</label>
                 <input
                   type="text"
                   name="name"
@@ -147,22 +211,41 @@ function Register() {
                 />
               </div>
               <div>
-                <label className="block text-primary-dark font-semibold mb-2">
-                  Apellidos
-                </label>
+                <label className="block text-primary-dark font-semibold mb-2">Apellidos</label>
                 <input
                   type="text"
-                  name="lastName"
+                  name="last_name"
                   className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-bg-light text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
-                  value={formData.lastName}
+                  value={formData.last_name}
                   onChange={handleChange}
                   required
                 />
               </div>
               <div>
-                <label className="block text-primary-dark font-semibold mb-2">
-                  Edad
-                </label>
+                <label className="block text-primary-dark font-semibold mb-2">Username</label>
+                <input
+                  type="text"
+                  name="username"
+                  className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-bg-light text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
+                  placeholder={usernameSuggestion || "Ej: juan.perez"}
+                />
+              </div>
+              <div>
+                <label className="block text-primary-dark font-semibold mb-2">Contraseña</label>
+                <input
+                  type="password"
+                  name="password"
+                  className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-bg-light text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-primary-dark font-semibold mb-2">Edad</label>
                 <input
                   type="number"
                   name="age"
@@ -209,15 +292,16 @@ function Register() {
                   Estado
                 </label>
                 <select
-                  name="userStatus"
+                  name="user_status_id"
                   className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-bg-light text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
-                  value={formData.userStatus}
+                  value={formData.user_status_id}
                   onChange={handleChange}
                   required
                 >
                   <option value="">Seleccione</option>
-                  <option value="Activo">Activo</option>
-                  <option value="Desactivado">Desactivado</option>
+                  {userStatus.map((status: any) => (
+                    <option key={status.id} value={status.id}>{status.description}</option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -225,15 +309,16 @@ function Register() {
                   Tipo de usuario
                 </label>
                 <select
-                  name="userType"
+                  name="user_type_id"
                   className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-bg-light text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
-                  value={formData.userType}
+                  value={formData.user_type_id}
                   onChange={handleChange}
                   required
                 >
                   <option value="">Seleccione</option>
-                  <option value="Administrador">Administrador</option>
-                  <option value="User">User</option>
+                  {userTypes.map((type: any) => (
+                    <option key={type.id} value={type.id}>{type.description}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -253,7 +338,9 @@ function Register() {
               </button>
             </div>
           </form>
-        </div>
+  </div>
+  {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={400} />} 
+  <ToastContainer />
         {/* Tabla de usuarios */}
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
@@ -291,11 +378,7 @@ function Register() {
                   <th className="px-4 py-2 font-semibold">Nombres</th>
                   <th className="px-4 py-2 font-semibold">Apellidos</th>
                   <th className="px-4 py-2 font-semibold">Edad</th>
-                  <th className="px-4 py-2 font-semibold">Sexo</th>
-                  <th className="px-4 py-2 font-semibold">
-                    Correo electrónico
-                  </th>
-                  <th className="px-4 py-2 font-semibold">Fecha de registro</th>
+                  <th className="px-4 py-2 font-semibold">Correo electrónico</th>
                   <th className="px-4 py-2 font-semibold">Estado</th>
                   <th className="px-4 py-2 font-semibold">Acciones</th>
                 </tr>
@@ -314,24 +397,18 @@ function Register() {
                       className="border-b hover:bg-gray-50"
                     >
                       <td className="px-4 py-2">{user.name}</td>
-                      <td className="px-4 py-2">{user.lastName}</td>
+                      <td className="px-4 py-2">{user.last_name}</td>
                       <td className="px-4 py-2">{user.age}</td>
-                      <td className="px-4 py-2">{user.sex}</td>
                       <td className="px-4 py-2">{user.email}</td>
-                      <td className="px-4 py-2">
-                        {user.created_at
-                          ? new Date(user.created_at).toLocaleDateString()
-                          : ""}
-                      </td>
                       <td className="px-4 py-2">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            user.userStatus === "Activo"
+                            user.user_status_id === 1
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
                           }`}
                         >
-                          {user.userStatus}
+                          {user.user_status ? user.user_status : user.user_status_id === 1 ? "Activo" : "Desactivado"}
                         </span>
                       </td>
                       <td className="px-4 py-2 flex gap-2 justify-center">
@@ -355,74 +432,11 @@ function Register() {
                             />
                           </svg>
                         </button>
-                        <button
-                          title="Eliminar"
-                          className="text-red-600 hover:text-red-400"
-                          onClick={() => handleDelete(user.id)}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-5 h-5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M6 18 18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          title={
-                            user.userStatus === "Activo"
-                              ? "Desactivar"
-                              : "Activar"
-                          }
-                          className={
-                            user.userStatus === "Activo"
-                              ? "text-yellow-500 hover:text-yellow-400"
-                              : "text-green-600 hover:text-green-400"
-                          }
-                          onClick={() => handleToggleStatus(user)}
-                        >
-                          {user.userStatus === "Activo" ? (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="w-5 h-5"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M18.364 5.636a9 9 0 1 1-12.728 0M12 3v9"
-                              />
-                            </svg>
-                          ) : (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="w-5 h-5"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                              />
-                            </svg>
-                          )}
-                        </button>
+                        {/* Botón eliminar oculto por desarrollo */}
+                        {/* Botón activar/desactivar removido por solicitud */}
                         {/* Modal de edición */}
                         {showEditModal && editUser && (
-                          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+                          <div className="fixed inset-0 bg-black bg-opacity-1 flex items-center justify-center z-50">
                             <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg relative">
                               <button
                                 className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
@@ -470,9 +484,9 @@ function Register() {
                                     </label>
                                     <input
                                       type="text"
-                                      name="lastName"
+                                      name="last_name"
                                       className="border border-gray-300 rounded px-3 py-2 w-full"
-                                      value={editUser.lastName}
+                                      value={editUser.last_name}
                                       onChange={handleEditChange}
                                       required
                                     />
@@ -527,17 +541,16 @@ function Register() {
                                       Estado
                                     </label>
                                     <select
-                                      name="userStatus"
+                                      name="user_status_id"
                                       className="border border-gray-300 rounded px-3 py-2 w-full"
-                                      value={editUser.userStatus}
+                                      value={editUser.user_status_id}
                                       onChange={handleEditChange}
                                       required
                                     >
                                       <option value="">Seleccione</option>
-                                      <option value="Activo">Activo</option>
-                                      <option value="Desactivado">
-                                        Desactivado
-                                      </option>
+                                      {userStatus.map((status: any) => (
+                                        <option key={status.id} value={status.id}>{status.description}</option>
+                                      ))}
                                     </select>
                                   </div>
                                   <div>
@@ -545,17 +558,16 @@ function Register() {
                                       Tipo de usuario
                                     </label>
                                     <select
-                                      name="userType"
+                                      name="user_type_id"
                                       className="border border-gray-300 rounded px-3 py-2 w-full"
-                                      value={editUser.userType}
+                                      value={editUser.user_type_id}
                                       onChange={handleEditChange}
                                       required
                                     >
                                       <option value="">Seleccione</option>
-                                      <option value="Administrador">
-                                        Administrador
-                                      </option>
-                                      <option value="User">User</option>
+                                      {userTypes.map((type: any) => (
+                                        <option key={type.id} value={type.id}>{type.description}</option>
+                                      ))}
                                     </select>
                                   </div>
                                 </div>

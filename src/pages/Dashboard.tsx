@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../services/api";
+import { getAllMeasurements, getMeasurementsByUser } from "../services/measurements";
 import {
   LineChart,
   Line,
@@ -22,11 +22,21 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await api.get("/glucose/last"); // último registro
-      setLastMeasurement(res.data);
-
-      const historyRes = await api.get("/glucose/history"); // historial
-      setHistory(historyRes.data);
+      // Obtén el usuario logueado desde localStorage/context
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      let res;
+      if (user && user.user_type_id === 1) {
+        res = await getAllMeasurements();
+      } else if (user) {
+        res = await getMeasurementsByUser(user.id);
+      } else {
+        setHistory([]);
+        setLastMeasurement(null);
+        return;
+      }
+      setHistory(res.data);
+      // La última medición es el último elemento del array
+      setLastMeasurement(res.data.length > 0 ? res.data[res.data.length - 1] : null);
     };
     fetchData();
   }, []);
