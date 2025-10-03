@@ -474,7 +474,7 @@ function Register() {
                                       min={0}
                                     />
                                   </div>
-                                  <div>
+                                  {/*<div>
                                     <label className="block text-sky-900 font-medium mb-1">
                                       Sexo
                                     </label>
@@ -491,7 +491,7 @@ function Register() {
                                       </option>
                                       <option value="Femenino">Femenino</option>
                                     </select>
-                                  </div>
+                                  </div>*/}
                                   <div>
                                     <label className="block text-sky-900 font-medium mb-1">
                                       Correo electrónico
