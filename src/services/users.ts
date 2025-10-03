@@ -13,7 +13,6 @@ export const createUser = async (data: {
   user_type_id: number;
   user_status_id: number;
   age: number;
-  sex: string;
 }) => {
   return api.post("/user/create", data);
 };
@@ -31,7 +30,6 @@ export const updateUser = async (data: {
   user_type_id: number;
   user_status_id: number;
   age: number;
-  sex: string;
   password?: string;
 }) => {
   return api.post("/user/update", data);

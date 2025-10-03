@@ -101,7 +101,7 @@ function Register() {
         user_type_id: Number(editUser.user_type_id),
         user_status_id: Number(editUser.user_status_id),
         age: Number(editUser.age),
-        sex: editUser.sex,
+        //sex: editUser.sex,
         password: editUser.password || "", // Opcional
       });
       closeEditModal();
@@ -151,7 +151,7 @@ function Register() {
         user_type_id: Number(formData.user_type_id),
         user_status_id: Number(formData.user_status_id),
         age: Number(formData.age),
-        sex: formData.sex,
+        //sex: formData.sex,
       });
       setShowConfetti(true);
       toast.success("Usuario registrado correctamente ✅", { position: "top-center", autoClose: 2500 });
