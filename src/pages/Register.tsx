@@ -240,22 +240,7 @@ function Register() {
                   min={0}
                 />
               </div>
-              <div>
-                <label className="block text-primary-dark font-semibold mb-2">
-                  Sexo
-                </label>
-                <select
-                  name="sex"
-                  className="border border-gray-300 rounded-xl px-4 py-3 w-full bg-bg-light text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-light transition"
-                  value={formData.sex}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccione</option>
-                  <option value="Masculino">Masculino</option>
-                  <option value="Femenino">Femenino</option>
-                </select>
-              </div>
+              {/* Campo sexo oculto */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
               <div>
