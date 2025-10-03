@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { login } from "../services/auth";
+// ...existing code...
 
 // Componente de Login preparado para integración con el backend
 // Solo actualiza la función handleLogin cuando el endpoint esté disponible

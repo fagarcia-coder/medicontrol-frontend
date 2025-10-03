@@ -4,7 +4,7 @@ import { getUserTypes, getUserStatus } from "../services/userTypeStatus";
 import Confetti from "react-confetti";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getUsers, createUser, updateUser, deactivateUser } from "../services/users";
+import { getUsers, createUser, updateUser } from "../services/users";
 
 const initialForm = {
   name: "", 
@@ -64,26 +64,10 @@ function Register() {
   };
 
   // Eliminar usuario
-  const handleDelete = async (userId: number) => {
-    if (!window.confirm("¿Seguro que deseas desactivar este usuario?")) return;
-    try {
-      await deactivateUser({ id: userId });
-      await fetchUsers();
-      toast.success("Usuario desactivado correctamente ✅", { position: "top-center", autoClose: 2500 });
-    } catch (err) {
-      toast.error("Error al desactivar usuario ❌", { position: "top-center", autoClose: 2500 });
-    }
-  };
+  // ...existing code...
 
   // Activar/desactivar usuario
-  const handleToggleStatus = async (user: any) => {
-    try {
-      await deactivateUser(user.id);
-      await fetchUsers();
-    } catch (err) {
-      alert("Error al cambiar estado");
-    }
-  };
+  // ...existing code...
 
   // Editar usuario
   const openEditModal = (user: any) => {
