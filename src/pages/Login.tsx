@@ -1,40 +1,67 @@
 
 import { useState } from "react";
+import api from "../services/api";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 // ...existing code...
 
 // Componente de Login preparado para integración con el backend
 // Solo actualiza la función handleLogin cuando el endpoint esté disponible
 function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
-  // Cuando el backend tenga el endpoint de login, actualiza la ruta y los datos aquí
-  // Ejemplo recomendado:
-  // const res = await api.post("/user/login", { email: username, password });
-  // localStorage.setItem("token", res.data.token);
-  // Redirige al dashboard o guarda el usuario en contexto
+  const [username, setUsername] = useState("dennis.anaya@uped.com.sv");
+  const [password, setPassword] = useState("bIspERatUriXemos");
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulación de login para desarrollo
-    // Puedes cambiar los datos simulados según tus usuarios admin reales
-    const mockUser = {
-      id: 1,
-      name: "Admin",
-      user_type_id: 1,
-      email: username,
-    };
-    localStorage.setItem("token", "mock-token");
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    if (mockUser.user_type_id === 1) {
-      window.location.href = "/register";
-    } else {
-      window.location.href = "/dashboard";
+  e.preventDefault();        
+  try {
+    const res = await api.post("/session/login", { email: username, password });
+    console.log("Respuesta del login:", res.data.user);
+    // guardar el token y la información del usuario en el almacenamiento local
+    localStorage.setItem("token", res.data.user.session_token);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+    // Configuramos Bearer el token para futuras solicitudes
+    api.defaults.headers.common["Authorization"] = `Bearer ${res.data.user.session_token}`;
+
+    switch (res.data.user.user_type_id) {
+      case 1:
+        window.location.href = "/register";
+        break;
+      case 2:
+        window.location.href = "/dashboard";
+        break;
+      case 3:
+        window.location.href = "/register";
+        break;
+      case 4:
+        window.location.href = "/register";
+        break;
+      default:
+        toast.error("Tipo de usuario no reconocido.");
+    }
+
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+          switch (error.response?.status) {
+            case 400:
+              toast.error("Solicitud incorrecta. Por favor, verifica tus datos.");
+              break;
+            case 401:
+              toast.error("Credenciales inválidas. Intenta de nuevo.");
+              break;
+            case 500:
+              toast.error("Error del servidor. Por favor, intenta más tarde.");
+              break;
+            default:
+              toast.error("Ocurrió un error inesperado. Por favor, intenta de nuevo.");
+          }
+      }
     }
   };
 
   return (
     <div className="flex min-h-screen font-sans bg-bg-light">
       {/* Left image section */}
+      <ToastContainer />
       <div className="hidden md:flex w-1/2 bg-primary-light items-center justify-center relative">
         <img
           src="https://framerusercontent.com/images/wsoVMdFp2Vwsrrw5LzDvwLS0u8.jpg"
@@ -82,6 +109,7 @@ function Login() {
             <button
               type="submit"
               className="bg-primary hover:bg-primary-dark text-black font-bold py-3 rounded-xl w-full shadow transition-colors text-lg tracking-wide"
+              onClick={handleLogin}
             >
               Iniciar sesión
             </button>
@@ -94,5 +122,8 @@ function Login() {
     </div>
   );
 }
+
+
+
 
 export default Login;
