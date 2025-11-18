@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Register from './pages/Register';
 import History from './pages/History';
 import Recommendations from './pages/Recomendations';
+import WeeklyFoodPlanManual from './pages/WeeklyFoodPlanManual';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/history" element={<History />} />
         <Route path="/recommendations" element={<Recommendations />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/weekly-plan" element={<WeeklyFoodPlanManual />} />
       </Routes>
     </Router>
   );
