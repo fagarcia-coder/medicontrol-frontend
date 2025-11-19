@@ -4,32 +4,16 @@ import Dashboard from './pages/Dashboard';
 import Register from './pages/Register';
 import History from './pages/History';
 import Recommendations from './pages/Recomendations';
-<<<<<<< HEAD
-import WeeklyFoodPlanManual from './pages/WeeklyFoodPlanManual';
-=======
 import Measurements from './pages/Measurements';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Informacion from './pages/Informacion';
 import ProtectedRoute from './components/ProtectedRoute';
->>>>>>> 5aac419 (Creacion del Navbar y el  Footer)
 
 function App() {
   return (
     <Router>
-<<<<<<< HEAD
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/recommendations" element={<Recommendations />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-        <Route path="/weekly-plan" element={<WeeklyFoodPlanManual />} />
-      </Routes>
-=======
       <AppContent />
->>>>>>> 5aac419 (Creacion del Navbar y el  Footer)
     </Router>
   );
 }
