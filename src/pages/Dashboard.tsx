@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import { getAllMeasurements, getMeasurementsByUser } from "../services/measurements";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer,
-} from "recharts";
+import SummaryCards from "../components/Dashboard/SummaryCards";
+import GlucoseChart from "../components/Dashboard/GlucoseChart";
 
 interface Measurement {
   id: number;
@@ -17,12 +10,10 @@ interface Measurement {
 }
 
 function Dashboard() {
-  const [lastMeasurement, setLastMeasurement] = useState<Measurement | null>(null);
   const [history, setHistory] = useState<Measurement[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      // Obtén el usuario logueado desde localStorage/context
       const user = JSON.parse(localStorage.getItem("user") || "null");
       let res;
       if (user && user.user_type_id === 1) {
@@ -31,12 +22,9 @@ function Dashboard() {
         res = await getMeasurementsByUser(user.id);
       } else {
         setHistory([]);
-        setLastMeasurement(null);
         return;
       }
       setHistory(res.data);
-      // La última medición es el último elemento del array
-      setLastMeasurement(res.data.length > 0 ? res.data[res.data.length - 1] : null);
     };
     fetchData();
   }, []);
@@ -46,40 +34,14 @@ function Dashboard() {
       <div className="max-w-5xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-sky-900 mb-4">Panel de control</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Última medición */}
-          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col justify-center items-center">
-            <h2 className="text-lg font-semibold text-sky-900 mb-2">Última medición</h2>
-            {lastMeasurement ? (
-              <>
-                <div className="text-5xl font-extrabold text-sky-700 mb-2">
-                  {lastMeasurement.measurement_value} <span className="text-lg font-normal text-sky-900">mg/dL</span>
-                </div>
-                <div className="text-gray-500">{new Date(lastMeasurement.created_at).toLocaleString()}</div>
-              </>
-            ) : (
-              <div className="text-gray-400">No hay mediciones recientes</div>
-            )}
-          </div>
+        <SummaryCards measurements={history} />
 
-          {/* Gráfica historial */}
-          <div className="bg-white rounded-xl shadow-lg p-8 h-80 flex flex-col">
-            <h2 className="text-lg font-semibold text-sky-900 mb-4">Historial de glucosa</h2>
-            <div className="flex-1">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={history}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="created_at" tickFormatter={(d: string) => new Date(d).toLocaleDateString()} />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="measurement_value" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-lg font-semibold text-sky-900 mb-4">Historial de glucosa (últimos registros)</h2>
+          <GlucoseChart data={history} />
         </div>
 
-        {/* Tabla historial */}
+        {/* Últimas mediciones resumen con botón a historial */}
         <div className="bg-white rounded-xl shadow-lg p-8">
           <h2 className="text-lg font-semibold text-sky-900 mb-4">Historial detallado</h2>
           <div className="overflow-x-auto">
@@ -96,7 +58,7 @@ function Dashboard() {
                     <td colSpan={2} className="text-center py-6 text-gray-400">No hay datos</td>
                   </tr>
                 ) : (
-                  history.map((m) => (
+                  history.slice(-10).reverse().map((m) => (
                     <tr key={m.id} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-2">{new Date(m.created_at).toLocaleString()}</td>
                       <td className="px-4 py-2 font-semibold">{m.measurement_value}</td>
