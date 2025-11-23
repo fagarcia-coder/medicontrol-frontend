@@ -1,1 +1,37 @@
 @import "tailwindcss";
+
+/* For Firefox, remove inner spin/button on number inputs if needed */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Remove select native arrow on IE/Edge */
+select::-ms-expand {
+	display: none;
+}
+
+/* Ensure appearance-none for selects in Chromium-based browsers */
+.appearance-none {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+/* Hide native calendar/time picker icons (visual only) while allowing programmatic opening
+	 We hide the native indicator so only the custom (black) icon is visible; the custom icon
+	 will call focus/showPicker to open the native UI. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+	opacity: 0;
+	pointer-events: none;
+	width: 0;
+	height: 0;
+}
+
+/* Firefox */
+input[type="date"]::-moz-calendar-picker-indicator,
+input[type="time"]::-moz-calendar-picker-indicator {
+	display: none;
+}

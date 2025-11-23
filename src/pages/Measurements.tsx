@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   createMeasurement,
   updateMeasurement,
@@ -29,6 +29,8 @@ function Measurements() {
   const [moment, setMoment] = useState("");
   const [note, setNote] = useState("");
   const [editing, setEditing] = useState<Measurement | null>(null);
+  const dateRef = useRef<HTMLInputElement | null>(null);
+  const timeRef = useRef<HTMLInputElement | null>(null);
 
   const fetch = async () => {
     const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -94,6 +96,20 @@ function Measurements() {
     await fetch();
   };
 
+  const openDatePicker = () => {
+    if (!dateRef.current) return;
+    const el: any = dateRef.current;
+    if (typeof el.showPicker === "function") el.showPicker();
+    else el.focus();
+  };
+
+  const openTimePicker = () => {
+    if (!timeRef.current) return;
+    const el: any = timeRef.current;
+    if (typeof el.showPicker === "function") el.showPicker();
+    else el.focus();
+  };
+
   return (
     <div className="min-h-screen bg-bg-light px-6 py-8">
       <div className="max-w-6xl mx-auto">
@@ -103,33 +119,88 @@ function Measurements() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Fecha de registro *</label>
-                <input type="date" className="mt-1 block w-full rounded-md border" value={date} onChange={(e) => setDate(e.target.value)} required />
+                <div className="relative mt-1">
+                  <input
+                    type="date"
+                    ref={dateRef}
+                    className="block w-full rounded-md border border-gray-200 px-3 py-2 pr-8 bg-white focus:outline-none focus:ring-2 focus:ring-sky-300"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                  />
+                  <span role="button" tabIndex={0} onKeyDown={(e)=>{ if(e.key === 'Enter') openDatePicker(); }} onClick={openDatePicker} className="absolute inset-y-0 right-2 flex items-center cursor-pointer text-sky-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Hora *</label>
-                <input type="time" className="mt-1 block w-full rounded-md border" value={time} onChange={(e) => setTime(e.target.value)} required />
+                <div className="relative mt-1">
+                  <input
+                    type="time"
+                    ref={timeRef}
+                    className="block w-full rounded-md border border-gray-200 px-3 py-2 pr-8 bg-white focus:outline-none focus:ring-2 focus:ring-sky-300"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    required
+                  />
+                  <span role="button" tabIndex={0} onKeyDown={(e)=>{ if(e.key === 'Enter') openTimePicker(); }} onClick={openTimePicker} className="absolute inset-y-0 right-2 flex items-center cursor-pointer text-sky-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </span>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Glucosa (mg/dl) *</label>
-                <input type="number" step="0.1" className="mt-1 block w-full rounded-md border" value={value} onChange={(e) => setValue(e.target.value)} required />
+                <div className="relative mt-1">
+                  <input
+                    type="number"
+                    step="0.1"
+                    className="block w-full rounded-md border border-gray-200 px-3 py-2 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-sky-300"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    required
+                  />
+                  <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500 text-xs">mg/dl</span>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Momento de medición *</label>
-                <select className="mt-1 block w-full rounded-md border" value={moment} onChange={(e) => setMoment(e.target.value)} required>
-                  <option value="">Seleccione</option>
-                  {moments.map((m) => (
-                    <option key={m.id} value={m.id}>{m.label}</option>
-                  ))}
-                </select>
+                <div className="relative mt-1">
+                  <select
+                    className="block w-full rounded-md border border-gray-200 px-3 py-2 bg-white appearance-none pr-8 focus:outline-none focus:ring-2 focus:ring-sky-300"
+                    value={moment}
+                    onChange={(e) => setMoment(e.target.value)}
+                    required
+                  >
+                    <option value="">Seleccione</option>
+                    {moments.map((m) => (
+                      <option key={m.id} value={m.id}>{m.label}</option>
+                    ))}
+                  </select>
+                  <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 3a1 1 0 01.707.293l3.999 3.999a1 1 0 11-1.414 1.414L10 5.414 6.707 8.706A1 1 0 115.293 7.293l4-4A1 1 0 0110 3z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                </div>
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Nota</label>
-              <textarea className="mt-1 block w-full rounded-md border" rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
+              <textarea
+                className="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-sky-300"
+                rows={3}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
             </div>
             <div className="flex gap-4">
-              <button type="button" className="bg-gray-200 px-4 py-2 rounded" onClick={resetForm}>Limpiar</button>
-              <button type="submit" className="bg-sky-900 text-white px-4 py-2 rounded">{editing ? "Actualizar" : "Guardar"}</button>
+              <button type="button" className="bg-white border border-gray-200 px-4 py-2 rounded hover:bg-gray-50" onClick={resetForm}>Limpiar</button>
+              <button type="submit" className="bg-sky-900 text-white px-4 py-2 rounded shadow hover:bg-sky-800">{editing ? "Actualizar" : "Guardar"}</button>
             </div>
           </form>
         </div>
