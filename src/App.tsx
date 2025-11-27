@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Register from './pages/Register';
 import History from './pages/History';
 import Recommendations from './pages/Recomendations';
+import WeeklyFoodPlanManual from './pages/WeeklyFoodPlanManual';
 import Measurements from './pages/Measurements';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -31,6 +32,7 @@ function AppContent() {
         {/* Public / authenticated routes */}
         <Route path="/dashboard" element={<ProtectedRoute allowedRoles={[1,2,3]}><Dashboard /></ProtectedRoute>} />
         <Route path="/measurements" element={<ProtectedRoute allowedRoles={[1,2,3]}><Measurements /></ProtectedRoute>} />
+        <Route path="/weekly-plan" element={<ProtectedRoute allowedRoles={[1,2,3]}><WeeklyFoodPlanManual /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute allowedRoles={[1,2,3]}><History /></ProtectedRoute>} />
         <Route path="/recommendations" element={<ProtectedRoute allowedRoles={[1,2,3]}><Recommendations /></ProtectedRoute>} />
 

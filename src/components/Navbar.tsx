@@ -21,6 +21,7 @@ function Navbar() {
 
   const menu = [
     { to: "/dashboard", label: "Dashboard", roles: [1, 2, 3] },
+    { to: "/weekly-plan", label: "Plan semanal", roles: [1, 2, 3] },
     { to: "/register", label: "Usuarios", roles: [1] },
     { to: "/measurements", label: "Mediciones", roles: [1, 2, 3] },
     { to: "/history", label: "Historial", roles: [1, 2, 3] },
@@ -43,7 +44,6 @@ function Navbar() {
             <img src={logoIcon} alt="Medicontrol" className="h-8 w-8" />
             <span className="text-sky-900 font-extrabold text-xl">Medicontrol</span>
           </Link>
-          <span className="hidden md:inline-block text-sm text-gray-500 ml-2">Control de glucosa</span>
         </div>
 
         <nav className={`md:flex items-center gap-4 ${open ? '' : 'hidden'} md:visible md:static`}>
