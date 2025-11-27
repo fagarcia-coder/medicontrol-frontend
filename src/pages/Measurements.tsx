@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   createMeasurement,
   updateMeasurement,
@@ -69,15 +71,35 @@ function Measurements() {
       if (isNaN(measurementValue)) return;
 
       if (editing) {
-        await updateMeasurement({ id: editing.id, measurement_value: measurementValue });
+        const payload: any = { id: editing.id, measurement_value: measurementValue };
+        if (date) payload.created_at = time ? `${date}T${time}:00` : `${date}T00:00:00`;
+        if (note) payload.note = note;
+        if (moment) payload.moment = moment;
+            console.debug("[Measurements] update payload:", payload);
+            await updateMeasurement(payload);
       } else {
         const user = JSON.parse(localStorage.getItem("user") || "null");
-        await createMeasurement({ user_id: user?.id || 0, measurement_value: measurementValue });
+        const payload: any = { user_id: user?.id || 0, measurement_value: measurementValue };
+        if (date) payload.created_at = time ? `${date}T${time}:00` : `${date}T00:00:00`;
+        if (note) payload.note = note;
+        if (moment) payload.moment = moment;
+            console.debug("[Measurements] create payload:", payload);
+            await createMeasurement(payload);
       }
       await fetch();
       resetForm();
+      toast.success("Registro guardado");
     } catch (err) {
       console.error(err);
+      // If axios returns a response body, show it to the user for debugging
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyErr: any = err;
+      if (anyErr?.response?.data) {
+        const msg = anyErr.response.data.message || JSON.stringify(anyErr.response.data);
+        toast.error(`Error: ${msg}`);
+      } else {
+        toast.error("Ocurrió un error al guardar. Revisa la consola.");
+      }
     }
   };
 
@@ -112,6 +134,7 @@ function Measurements() {
 
   return (
     <div className="min-h-screen bg-bg-light px-6 py-8">
+      <ToastContainer />
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-2xl shadow-card p-8 mb-8">
           <h2 className="text-2xl font-bold text-sky-900 mb-6">Nuevo registro</h2>

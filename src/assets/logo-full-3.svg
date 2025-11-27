@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="380" height="88" viewBox="0 0 380 88" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad3" x1="0" x2="1">
+      <stop offset="0" stop-color="#0ea5a3"/>
+      <stop offset="1" stop-color="#0284c7"/>
+    </linearGradient>
+  </defs>
+  <rect width="380" height="88" rx="12" fill="transparent" />
+
+  <!-- Glucose meter icon -->
+  <g transform="translate(16,12)">
+    <rect x="0" y="0" width="64" height="64" rx="10" fill="#ffffff" stroke="#0f172a" stroke-opacity="0.06" />
+    <rect x="8" y="10" width="48" height="30" rx="4" fill="#f8fafc" stroke="#c7e9f2" />
+    <circle cx="32" cy="26" r="6" fill="url(#grad3)" />
+    <!-- drop on screen -->
+    <path d="M32 16 C38 26 38 34 32 44 C26 34 26 26 32 16 Z" fill="#ffffff" opacity="0.9" transform="translate(0,0) scale(0.6) translate(12,6)"/>
+    <!-- strip insertion / button -->
+    <rect x="22" y="44" width="20" height="6" rx="1" fill="#e6f6fb" />
+  </g>
+
+  <!-- Brand text -->
+  <g transform="translate(96,26)">
+    <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="#0f172a">Medicontrol</text>
+    <text x="0" y="26" font-family="Inter, Arial, sans-serif" font-size="12" fill="#475569">Medidor de glucosa y registros</text>
+  </g>
+</svg>

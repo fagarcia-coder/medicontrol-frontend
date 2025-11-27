@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gi3" x1="0" x2="1">
+      <stop offset="0" stop-color="#0ea5a3"/>
+      <stop offset="1" stop-color="#0284c7"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#ffffff" />
+  <!-- meter body -->
+  <rect x="8" y="8" width="48" height="48" rx="8" fill="#f8fafc" stroke="#c7e9f2" />
+  <!-- screen circle -->
+  <circle cx="32" cy="28" r="8" fill="url(#gi3)" />
+  <!-- drop inside -->
+  <path d="M32 18 C36 24 36 28 32 36 C28 28 28 24 32 18 Z" fill="#ffffff" transform="scale(0.8) translate(6,4)" opacity="0.95"/>
+  <!-- test strip slot -->
+  <rect x="22" y="40" width="20" height="4" rx="1" fill="#e6f6fb" />
+</svg>

@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import logoIcon from "../assets/logo-icon-3.svg";
 
 function Navbar() {
   const location = useLocation();
@@ -38,7 +39,10 @@ function Navbar() {
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => setOpen((s) => !s)} className="p-2 rounded-lg hover:bg-gray-100 md:hidden">{open ? '✕' : '☰'}</button>
-          <Link to="/dashboard" className="text-sky-900 font-extrabold text-xl">Medicontrol</Link>
+          <Link to="/dashboard" className="flex items-center gap-3">
+            <img src={logoIcon} alt="Medicontrol" className="h-8 w-8" />
+            <span className="text-sky-900 font-extrabold text-xl">Medicontrol</span>
+          </Link>
           <span className="hidden md:inline-block text-sm text-gray-500 ml-2">Control de glucosa</span>
         </div>
 

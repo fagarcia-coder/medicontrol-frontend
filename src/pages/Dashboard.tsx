@@ -45,7 +45,7 @@ function Dashboard() {
         <div className="bg-white rounded-xl shadow-lg p-8">
           <h2 className="text-lg font-semibold text-sky-900 mb-4">Historial detallado</h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse rounded-xl overflow-hidden text-sm">
+            <table className="min-w-full border-collapse rounded-xl text-sm">
               <thead className="bg-sky-900 text-white">
                 <tr>
                   <th className="px-4 py-2 font-semibold">Fecha</th>

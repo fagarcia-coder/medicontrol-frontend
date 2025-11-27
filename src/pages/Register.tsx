@@ -316,11 +316,11 @@ function Register() {
             <div className="text-xl font-semibold text-sky-900">
               Usuarios registrados
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap items-center">
               <input
                 type="text"
                 placeholder="Escriba para buscar"
-                className="border border-gray-300 rounded px-3 py-2 w-64"
+                className="border border-gray-300 rounded px-3 py-2 w-full md:w-64"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

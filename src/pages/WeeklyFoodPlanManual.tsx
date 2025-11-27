@@ -68,7 +68,7 @@ const WeeklyFoodPlanManual: React.FC = () => {
             </p>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse rounded-xl overflow-hidden">
+              <table className="min-w-full border-collapse rounded-xl">
                 <thead className="bg-sky-900 text-white">
                   <tr>
                     <th className="px-4 py-3 text-left">Día</th>

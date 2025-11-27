@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="64" viewBox="0 0 320 64" fill="none">
+  <!-- Simple glucose drop + text logo -->
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1">
+      <stop offset="0" stop-color="#06b6d4"/>
+      <stop offset="1" stop-color="#06a6f4"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="64" rx="8" fill="transparent" />
+  <g transform="translate(12,8)">
+    <path d="M22 0 C34 14 34 26 22 40 C10 26 10 14 22 0 Z" fill="url(#g1)" stroke="#085e77" stroke-width="1"/>
+    <circle cx="22" cy="14" r="4" fill="#ffffff" opacity="0.85"/>
+  </g>
+  <g transform="translate(64,18)">
+    <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Medicontrol</text>
+    <text x="0" y="22" font-family="Inter, Arial, sans-serif" font-size="12" fill="#475569">Control de glucosa</text>
+  </g>
+</svg>

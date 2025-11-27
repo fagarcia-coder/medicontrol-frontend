@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="360" height="80" viewBox="0 0 360 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lg" x1="0" x2="1">
+      <stop offset="0" stop-color="#0284c7"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="80" rx="10" fill="transparent" />
+  <!-- Icon: clear droplet with plus -->
+  <g transform="translate(18,14)">
+    <path d="M22 0 C36 18 36 30 22 48 C8 30 8 18 22 0 Z" fill="url(#lg)" stroke="#05445E" stroke-width="1"/>
+    <rect x="17" y="18" width="10" height="2.5" rx="1" fill="#ffffff" />
+    <rect x="21" y="14" width="2.5" height="10" rx="1" fill="#ffffff" />
+  </g>
+  <g transform="translate(84,28)">
+    <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="#0f172a">Medicontrol</text>
+    <text x="0" y="26" font-family="Inter, Arial, sans-serif" font-size="12" fill="#334155">Control de glucosa</text>
+  </g>
+</svg>
