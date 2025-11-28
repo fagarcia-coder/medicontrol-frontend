@@ -4,6 +4,7 @@ import {
   createFoodRecommendation,
   updateFoodRecommendation,
   deleteFoodRecommendation,
+  getFoodByUser,
 } from "../services/food";
 
 interface Recommendation {
