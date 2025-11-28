@@ -19,14 +19,22 @@ function Navbar() {
 
   const role = user?.user_type_id; // 1=admin,2=medico,3=paciente (assumption)
 
+  // Role IDs assumption: 1=admin, 2=medico, 3=paciente, 4=enfermera
   const menu = [
-    { to: "/dashboard", label: "Dashboard", roles: [1, 2, 3] },
-    { to: "/weekly-plan", label: "Plan semanal", roles: [1, 2, 3] },
+    // Dashboard: everyone authenticated
+    { to: "/dashboard", label: "Dashboard", roles: [1, 2, 3, 4] },
+    // Weekly plan: medico + admin
+    { to: "/weekly-plan", label: "Plan semanal", roles: [1, 2] },
+    // Register: admin only
     { to: "/register", label: "Usuarios", roles: [1] },
-    { to: "/measurements", label: "Mediciones", roles: [1, 2, 3] },
-    { to: "/history", label: "Historial", roles: [1, 2, 3] },
-    { to: "/recommendations", label: "Recomendaciones", roles: [1, 2, 3] },
-    { to: "/informacion", label: "Información", roles: [1, 2, 3] },
+    // Measurements: admin, medico, paciente, enfermera
+    { to: "/measurements", label: "Mediciones", roles: [1, 2, 3, 4] },
+    // History: admin, medico, enfermera
+    { to: "/history", label: "Historial", roles: [1, 2, 4] },
+    // Recommendations: admin, medico
+    { to: "/recommendations", label: "Recomendaciones", roles: [1, 2] },
+    // Informacion: all authenticated roles (or keep public if desired)
+    { to: "/informacion", label: "Información", roles: [1, 2, 3, 4] },
   ];
 
   const handleLogout = () => {
@@ -48,7 +56,7 @@ function Navbar() {
 
         <nav className={`md:flex items-center gap-4 ${open ? '' : 'hidden'} md:visible md:static`}>
           {menu.map((m) => (
-            (m.roles.includes(role) || role == null) && (
+            (role != null && m.roles.includes(role)) && (
               <Link key={m.to} to={m.to} className="block px-3 py-2 rounded hover:bg-sky-50 text-sm text-sky-700">{m.label}</Link>
             )
           ))}

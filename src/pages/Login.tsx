@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import api from "../services/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -9,6 +10,17 @@ import axios from "axios";
 // Componente de Login preparado para integración con el backend
 // Solo actualiza la función handleLogin cuando el endpoint esté disponible
 function Login() {
+  const location = useLocation();
+  useEffect(() => {
+    // If redirected due to inactive/blocked user, show a message
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const state: any = (location && (location as any).state) || {};
+    if (state?.reason === 'inactive') {
+      toast.error('Tu cuenta está inactiva. Contacta al administrador.');
+    } else if (state?.reason === 'blocked') {
+      toast.error('Tu cuenta está bloqueada. Contacta al administrador.');
+    }
+  }, [location]);
   const [username, setUsername] = useState("dennis.anaya@uped.com.sv");
   const [password, setPassword] = useState("bIspERatUriXemos");
   const handleLogin = async (e: React.FormEvent) => {

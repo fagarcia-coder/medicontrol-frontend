@@ -14,6 +14,7 @@ interface Measurement {
   measurement_value: number;
   created_at: string;
   note?: string;
+  moment?: string;
 }
 
 const moments = [
@@ -34,8 +35,43 @@ function Measurements() {
   const dateRef = useRef<HTMLInputElement | null>(null);
   const timeRef = useRef<HTMLInputElement | null>(null);
 
+  // Live clock: when not editing, show current date/time and update every second
+  useEffect(() => {
+    let timer: number | undefined;
+    const startClock = () => {
+      const update = () => {
+        const now = new Date();
+        setDate(now.toISOString().slice(0, 10));
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        setTime(`${hh}:${mm}`);
+      };
+      update();
+      timer = window.setInterval(update, 1000);
+    };
+
+    if (!editing) startClock();
+
+    return () => {
+      if (timer) window.clearInterval(timer);
+    };
+    // restart when editing state changes
+  }, [editing]);
+
   const fetch = async () => {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
+    let user = JSON.parse(localStorage.getItem("user") || "null");
+    // Ensure dev user seeded if missing (dev helper should run, but double-check here)
+    if ((!user || !user.id) && import.meta.env && import.meta.env.DEV) {
+      try {
+        const devUser = { id: 1, user_type_id: 1, name: 'Dev User', user_status_id: 1 };
+        localStorage.setItem('user', JSON.stringify(devUser));
+        localStorage.setItem('token', 'dev-token');
+        console.info('[dev] seeded localStorage.user from Measurements.fetch');
+        user = devUser;
+      } catch (err) {
+        // ignore
+      }
+    }
     try {
       if (user && user.user_type_id === 1) {
         const res = await getAllMeasurements();
@@ -71,20 +107,43 @@ function Measurements() {
       if (isNaN(measurementValue)) return;
 
       if (editing) {
-        const payload: any = { id: editing.id, measurement_value: measurementValue };
-        if (date) payload.created_at = time ? `${date}T${time}:00` : `${date}T00:00:00`;
-        if (note) payload.note = note;
-        if (moment) payload.moment = moment;
-            console.debug("[Measurements] update payload:", payload);
-            await updateMeasurement(payload);
+        // For updates send only id, measurement_value, note and moment
+        const payload: any = { id: editing.id, measurement_value: measurementValue, note: note || "", moment: moment || "" };
+        console.debug("[Measurements] update payload:", payload);
+        await updateMeasurement(payload);
       } else {
+        // For create send only user_id, measurement_value, note and moment
         const user = JSON.parse(localStorage.getItem("user") || "null");
-        const payload: any = { user_id: user?.id || 0, measurement_value: measurementValue };
-        if (date) payload.created_at = time ? `${date}T${time}:00` : `${date}T00:00:00`;
-        if (note) payload.note = note;
-        if (moment) payload.moment = moment;
-            console.debug("[Measurements] create payload:", payload);
-            await createMeasurement(payload);
+        if (!user || !user.id) {
+          console.error('[Measurements] no user in localStorage, aborting create');
+          toast.error('No hay usuario autenticado. Inicia sesión o habilita dev auth.');
+          return;
+        }
+        // If date and time were provided, include created_at to help the backend (format: YYYY-MM-DD HH:MM:SS)
+        let created_at: string | undefined = undefined;
+        if (date && time) {
+          created_at = `${date} ${time}:00`;
+        }
+        const payload: any = { user_id: user.id, measurement_value: measurementValue, note: note || "", moment: moment || "" };
+        if (created_at) payload.created_at = created_at;
+        console.debug("[Measurements] create payload:", payload);
+        try {
+          // Log JSON stringified payload to ensure exact format
+          console.debug("[Measurements] create payload (json):", JSON.stringify(payload));
+          const res = await createMeasurement(payload);
+          console.debug("[Measurements] create response:", res && res.data ? res.data : res);
+        } catch (reqErr) {
+          // More detailed logging for axios errors
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const aErr: any = reqErr;
+          console.error('[Measurements] create request failed', aErr);
+          console.error('[Measurements] create status:', aErr?.response?.status);
+          console.error('[Measurements] create response data:', aErr?.response?.data);
+          console.error('[Measurements] create response headers:', aErr?.response?.headers);
+          console.error('[Measurements] create request config:', aErr?.config);
+          // rethrow to be handled by outer catch which shows toast
+          throw reqErr;
+        }
       }
       await fetch();
       resetForm();
@@ -94,11 +153,15 @@ function Measurements() {
       // If axios returns a response body, show it to the user for debugging
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const anyErr: any = err;
-      if (anyErr?.response?.data) {
-        const msg = anyErr.response.data.message || JSON.stringify(anyErr.response.data);
-        toast.error(`Error: ${msg}`);
+      if (anyErr?.response) {
+        console.error('[Measurements] error.response:', anyErr.response);
+        const msg = anyErr.response.data?.message || JSON.stringify(anyErr.response.data) || anyErr.message;
+        toast.error(`Error ${anyErr.response.status || ''}: ${msg}`);
+      } else if (anyErr?.request) {
+        console.error('[Measurements] error.request:', anyErr.request);
+        toast.error('No hubo respuesta del servidor. Revisa la consola.');
       } else {
-        toast.error("Ocurrió un error al guardar. Revisa la consola.");
+        toast.error('Ocurrió un error al guardar. Revisa la consola.');
       }
     }
   };
@@ -110,6 +173,7 @@ function Measurements() {
     setDate(dt.toISOString().slice(0, 10));
     setTime(dt.toTimeString().slice(0, 5));
     setNote(m.note || "");
+    setMoment(m.moment || "");
   };
 
   const onDelete = async (id: number) => {
@@ -149,7 +213,7 @@ function Measurements() {
                     className="block w-full rounded-md border border-gray-200 px-3 py-2 pr-8 bg-white focus:outline-none focus:ring-2 focus:ring-sky-300"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    required
+                    disabled
                   />
                   <span role="button" tabIndex={0} onKeyDown={(e)=>{ if(e.key === 'Enter') openDatePicker(); }} onClick={openDatePicker} className="absolute inset-y-0 right-2 flex items-center cursor-pointer text-sky-900">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,7 +231,7 @@ function Measurements() {
                     className="block w-full rounded-md border border-gray-200 px-3 py-2 pr-8 bg-white focus:outline-none focus:ring-2 focus:ring-sky-300"
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    required
+                    disabled
                   />
                   <span role="button" tabIndex={0} onKeyDown={(e)=>{ if(e.key === 'Enter') openTimePicker(); }} onClick={openTimePicker} className="absolute inset-y-0 right-2 flex items-center cursor-pointer text-sky-900">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -212,6 +276,7 @@ function Measurements() {
                 </div>
               </div>
             </div>
+            <p className="text-sm text-gray-500">La fecha y hora se establecerán automáticamente en el servidor y no pueden ser editadas manualmente.</p>
             <div>
               <label className="block text-sm font-medium text-gray-700">Nota</label>
               <textarea
@@ -255,7 +320,7 @@ function Measurements() {
                         <td className="px-4 py-2">{d.toLocaleDateString()}</td>
                         <td className="px-4 py-2">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                         <td className="px-4 py-2 font-semibold">{m.measurement_value}</td>
-                        <td className="px-4 py-2">-</td>
+                        <td className="px-4 py-2">{m.moment || "-"}</td>
                         <td className="px-4 py-2">{m.note || ""}</td>
                         <td className="px-4 py-2 flex gap-2">
                           <button className="text-sky-900" onClick={() => onEdit(m)}>Editar</button>

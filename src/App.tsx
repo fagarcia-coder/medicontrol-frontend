@@ -30,11 +30,11 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
 
         {/* Public / authenticated routes */}
-        <Route path="/dashboard" element={<ProtectedRoute allowedRoles={[1,2,3]}><Dashboard /></ProtectedRoute>} />
-        <Route path="/measurements" element={<ProtectedRoute allowedRoles={[1,2,3]}><Measurements /></ProtectedRoute>} />
-        <Route path="/weekly-plan" element={<ProtectedRoute allowedRoles={[1,2,3]}><WeeklyFoodPlanManual /></ProtectedRoute>} />
-        <Route path="/history" element={<ProtectedRoute allowedRoles={[1,2,3]}><History /></ProtectedRoute>} />
-        <Route path="/recommendations" element={<ProtectedRoute allowedRoles={[1,2,3]}><Recommendations /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute allowedRoles={[1,2,3,4]}><Dashboard /></ProtectedRoute>} />
+        <Route path="/measurements" element={<ProtectedRoute allowedRoles={[1,2,3,4]}><Measurements /></ProtectedRoute>} />
+        <Route path="/weekly-plan" element={<ProtectedRoute allowedRoles={[1,2]}><WeeklyFoodPlanManual /></ProtectedRoute>} />
+        <Route path="/history" element={<ProtectedRoute allowedRoles={[1,2,4]}><History /></ProtectedRoute>} />
+        <Route path="/recommendations" element={<ProtectedRoute allowedRoles={[1,2]}><Recommendations /></ProtectedRoute>} />
 
         {/* Admin only */}
         <Route path="/register" element={<ProtectedRoute allowedRoles={[1]}><Register /></ProtectedRoute>} />

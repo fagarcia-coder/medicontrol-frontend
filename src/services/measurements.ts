@@ -3,6 +3,9 @@ import api from "./api";
 export const createMeasurement = async (data: {
   user_id: number;
   measurement_value: number;
+  created_at?: string;
+  note?: string;
+  moment?: string;
 }) => {
   return api.post("/GlucoseMeasurements/create", data);
 };
@@ -10,6 +13,9 @@ export const createMeasurement = async (data: {
 export const updateMeasurement = async (data: {
   id: number;
   measurement_value: number;
+  created_at?: string;
+  note?: string;
+  moment?: string;
 }) => {
   return api.post("/GlucoseMeasurements/update", data);
 };
