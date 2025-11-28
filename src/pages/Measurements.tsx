@@ -60,26 +60,18 @@ function Measurements() {
 
   const fetch = async () => {
     let user = JSON.parse(localStorage.getItem("user") || "null");
-    // Ensure dev user seeded if missing (dev helper should run, but double-check here)
-    if ((!user || !user.id) && import.meta.env && import.meta.env.DEV) {
-      try {
-        const devUser = { id: 1, user_type_id: 1, name: 'Dev User', user_status_id: 1 };
-        localStorage.setItem('user', JSON.stringify(devUser));
-        localStorage.setItem('token', 'dev-token');
-        console.info('[dev] seeded localStorage.user from Measurements.fetch');
-        user = devUser;
-      } catch (err) {
-        // ignore
-      }
-    }
+    // Do not auto-seed any dev user here. Require real login or explicit dev seeding.
     try {
-      if (user && user.user_type_id === 1) {
+      if (user && (user.user_type_id === 1 || user.user_type_id === 2 || user.user_type_id === 4)) {
         const res = await getAllMeasurements();
+        console.debug('[Measurements] getAllMeasurements response:', res && res.data ? res.data : res);
         setMeasurements(res.data || []);
       } else if (user) {
         const res = await getMeasurementsByUser(user.id);
+        console.debug('[Measurements] getMeasurementsByUser response:', res && res.data ? res.data : res, 'userId=', user.id);
         setMeasurements(res.data || []);
       } else {
+        console.debug('[Measurements] no user found in localStorage');
         setMeasurements([]);
       }
     } catch (err) {
@@ -108,7 +100,9 @@ function Measurements() {
 
       if (editing) {
         // For updates send only id, measurement_value, note and moment
-        const payload: any = { id: editing.id, measurement_value: measurementValue, note: note || "", moment: moment || "" };
+        // send human-friendly label for moment (e.g. "Pre comida") instead of id
+        const momentValue = moments.find((mm) => mm.id === moment)?.label || moment || "";
+        const payload: any = { id: editing.id, measurement_value: measurementValue, note: note || "", moment: momentValue };
         console.debug("[Measurements] update payload:", payload);
         await updateMeasurement(payload);
       } else {
@@ -124,7 +118,9 @@ function Measurements() {
         if (date && time) {
           created_at = `${date} ${time}:00`;
         }
-        const payload: any = { user_id: user.id, measurement_value: measurementValue, note: note || "", moment: moment || "" };
+        // send human-friendly label for moment (e.g. "Pre comida") instead of id
+        const momentValue = moments.find((mm) => mm.id === moment)?.label || moment || "";
+        const payload: any = { user_id: user.id, measurement_value: measurementValue, note: note || "", moment: momentValue };
         if (created_at) payload.created_at = created_at;
         console.debug("[Measurements] create payload:", payload);
         try {
@@ -173,7 +169,14 @@ function Measurements() {
     setDate(dt.toISOString().slice(0, 10));
     setTime(dt.toTimeString().slice(0, 5));
     setNote(m.note || "");
-    setMoment(m.moment || "");
+    // When editing, if backend stored the human label, map to select id if possible
+    const byId = moments.find((mm) => mm.id === m.moment);
+    if (byId) {
+      setMoment(m.moment || "");
+    } else {
+      const byLabel = moments.find((mm) => mm.label === m.moment);
+      setMoment(byLabel ? byLabel.id : "");
+    }
   };
 
   const onDelete = async (id: number) => {
@@ -320,7 +323,7 @@ function Measurements() {
                         <td className="px-4 py-2">{d.toLocaleDateString()}</td>
                         <td className="px-4 py-2">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                         <td className="px-4 py-2 font-semibold">{m.measurement_value}</td>
-                        <td className="px-4 py-2">{m.moment || "-"}</td>
+                        <td className="px-4 py-2">{(moments.find((mm) => mm.id === m.moment)?.label) || m.moment || "-"}</td>
                         <td className="px-4 py-2">{m.note || ""}</td>
                         <td className="px-4 py-2 flex gap-2">
                           <button className="text-sky-900" onClick={() => onEdit(m)}>Editar</button>

@@ -29,10 +29,10 @@ function Navbar() {
     { to: "/register", label: "Usuarios", roles: [1] },
     // Measurements: admin, medico, paciente, enfermera
     { to: "/measurements", label: "Mediciones", roles: [1, 2, 3, 4] },
-    // History: admin, medico, enfermera
-    { to: "/history", label: "Historial", roles: [1, 2, 4] },
-    // Recommendations: admin, medico
-    { to: "/recommendations", label: "Recomendaciones", roles: [1, 2] },
+    // History: admin, medico, enfermera, paciente
+    { to: "/history", label: "Historial", roles: [1, 2, 3, 4] },
+    // Recommendations: admin, medico, paciente
+    { to: "/recommendations", label: "Recomendaciones", roles: [1, 2, 3] },
     // Informacion: all authenticated roles (or keep public if desired)
     { to: "/informacion", label: "Información", roles: [1, 2, 3, 4] },
   ];

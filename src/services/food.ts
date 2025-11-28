@@ -24,3 +24,8 @@ export const updateFoodRecommendation = async (data: {
 export const getFoodByLevel = async (level_glucose_id: number) => {
   return api.get(`/FoodRecommendation/by_level/${level_glucose_id}`);
 };
+
+export const getFoodByUser = async (user_id: number) => {
+  // Attempt to fetch recommendations assigned to a specific user
+  return api.get(`/FoodRecommendation/by_user/${user_id}`);
+};

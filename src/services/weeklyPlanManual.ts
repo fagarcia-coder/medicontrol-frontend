@@ -1,10 +1,4 @@
-import axios from "axios";
-
-// Opción 1: Si tienes .env
-const API_BASE_URL = "http://localhost:5050"; // Hardcodea la URL
-
-// Opción 2: Si prefieres hardcodear la URL
-// const API_BASE_URL = "http://localhost:5050";
+import api from "./api";
 
 export interface WeeklyPlan {
   Lunes: Record<string, string>;
@@ -27,14 +21,15 @@ export interface WeeklyPlanRequest {
 }
 
 export const getWeeklyPlanManual = async (request: WeeklyPlanRequest): Promise<WeeklyPlanResponse> => {
-    const token = localStorage.getItem('token'); // ← Obtén el token
-  
-    const response = await axios.post(`${API_BASE_URL}/api/FoodRecommendation/weekly-plan-manual`, request, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // ← Envía el token
-      },
-    });
-  
-    return response.data;
-  };
+  // Use shared axios instance so baseURL and Authorization header are consistent
+  try {
+    console.debug("[weeklyPlanManual] request payload:", request);
+    const response = await api.post(`/FoodRecommendation/weekly-plan-manual`, request);
+    console.debug("[weeklyPlanManual] response:", response?.data);
+    return response.data as WeeklyPlanResponse;
+  } catch (err: any) {
+    console.debug("[weeklyPlanManual] error:", err?.response?.data || err.message || err);
+    // Re-throw to allow caller to inspect the server error message
+    throw err;
+  }
+};

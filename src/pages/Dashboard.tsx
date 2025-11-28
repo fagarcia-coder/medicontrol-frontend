@@ -16,7 +16,7 @@ function Dashboard() {
     const fetchData = async () => {
       const user = JSON.parse(localStorage.getItem("user") || "null");
       let res;
-      if (user && user.user_type_id === 1) {
+      if (user && (user.user_type_id === 1 || user.user_type_id === 2 || user.user_type_id === 4)) {
         res = await getAllMeasurements();
       } else if (user) {
         res = await getMeasurementsByUser(user.id);

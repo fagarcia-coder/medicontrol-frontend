@@ -20,6 +20,7 @@ function Recomendations() {
     recommendation: "",
     type_food_id: "",
   });
+  const [userRole, setUserRole] = useState<number | null>(null);
   const [editRec, setEditRec] = useState<Recommendation | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -86,6 +87,26 @@ function Recomendations() {
 
   const fetchRecommendations = async (levelId: number) => {
     try {
+      // If current user is a patient, try fetching recommendations assigned to that user first
+      if (userRole === 3) {
+        try {
+          const raw = localStorage.getItem("user");
+          const u = raw ? JSON.parse(raw) : null;
+          const userId = u?.user_id ?? null;
+          if (userId) {
+            const userRes = await getFoodByUser(userId);
+            // If user-specific recommendations exist, use them
+            if (userRes?.data && userRes.data.length > 0) {
+              setRecommendations(userRes.data);
+              return;
+            }
+            // Otherwise fall through to level-based recommendations
+          }
+        } catch (e) {
+          // ignore and fallback to level-based
+        }
+      }
+
       const res = await getFoodByLevel(levelId);
       setRecommendations(res.data);
     } catch {
@@ -99,7 +120,21 @@ function Recomendations() {
     } else {
       setRecommendations([]);
     }
-  }, [level]);
+    // Re-run when either selected level or user role changes
+  }, [level, userRole]);
+
+  // determine user role to hide create/edit controls for patients
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const u = JSON.parse(raw);
+        setUserRole(u?.user_type_id ?? null);
+      }
+    } catch (e) {
+      setUserRole(null);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8">
@@ -119,7 +154,9 @@ function Recomendations() {
               <option value="3">Nivel 3</option>
             </select>
           </div>
-          <form onSubmit={handleCreate} className="mb-8 flex flex-col md:flex-row gap-4 items-end">
+          {/* Hide create form for patients (role 3) */}
+          {userRole !== 3 && (
+            <form onSubmit={handleCreate} className="mb-8 flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1">
               <label className="block text-sky-900 font-semibold mb-2">Nueva recomendación</label>
               <input
@@ -154,6 +191,10 @@ function Recomendations() {
               Crear
             </button>
           </form>
+          )}
+          {userRole === 3 && (
+            <div className="mb-6 text-sm text-gray-600">Como paciente solo puedes ver las recomendaciones asignadas a tu usuario. Si no ves recomendaciones, contacta a tu médico para que te asigne recomendaciones.</div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {recommendations.length === 0 ? (
               <div className="col-span-2 text-center text-gray-400 py-8">No hay recomendaciones disponibles</div>
@@ -168,22 +209,24 @@ function Recomendations() {
                     Tipo de alimento: {rec.type_food_id}
                   </span>
                   <p className="text-gray-700">{rec.recommendation}</p>
-                  <div className="absolute top-2 right-2 flex gap-2">
-                    <button
-                      className="text-sky-900 hover:text-sky-700"
-                      title="Editar"
-                      onClick={() => openEditModal(rec)}
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="text-red-600 hover:text-red-400"
-                      title="Eliminar"
-                      onClick={() => handleDelete(rec.recommendation_id)}
-                    >
-                      🗑️
-                    </button>
-                  </div>
+                  {userRole !== 3 && (
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <button
+                        className="text-sky-900 hover:text-sky-700"
+                        title="Editar"
+                        onClick={() => openEditModal(rec)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="text-red-600 hover:text-red-400"
+                        title="Eliminar"
+                        onClick={() => handleDelete(rec.recommendation_id)}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))
             )}

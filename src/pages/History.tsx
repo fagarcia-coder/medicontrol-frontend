@@ -15,7 +15,7 @@ function History() {
   useEffect(() => {
     const fetchData = async () => {
       const user = JSON.parse(localStorage.getItem("user") || "null");
-      if (user && user.user_type_id === 1) {
+      if (user && (user.user_type_id === 1 || user.user_type_id === 2 || user.user_type_id === 4)) {
         const res = await getAllMeasurements();
         setMeasurements(res.data);
       } else if (user) {

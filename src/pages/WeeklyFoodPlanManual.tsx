@@ -19,12 +19,15 @@ const WeeklyFoodPlanManual: React.FC = () => {
     setError(null);
 
     try {
-      const data = await getWeeklyPlanManual({
-        level_glucose_id: Number(selectedLevel),
-      });
+      const payload = { level_glucose_id: Number(selectedLevel) };
+      console.debug("[WeeklyFoodPlanManual] sending payload:", payload);
+      const data = await getWeeklyPlanManual(payload);
+      console.debug("[WeeklyFoodPlanManual] received:", data);
       setPlan(data);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al generar el plan semanal');
+      const serverMsg = err?.response?.data?.error || err?.message || 'Error al generar el plan semanal';
+      console.debug("[WeeklyFoodPlanManual] error:", err?.response?.data || err);
+      setError(serverMsg);
     } finally {
       setLoading(false);
     }
