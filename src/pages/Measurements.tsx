@@ -110,7 +110,7 @@ function Measurements() {
         const user = JSON.parse(localStorage.getItem("user") || "null");
         if (!user || !user.id) {
           console.error('[Measurements] no user in localStorage, aborting create');
-          toast.error('No hay usuario autenticado. Inicia sesión o habilita dev auth.');
+          toast.error('No hay usuario autenticado.');
           return;
         }
         // If date and time were provided, include created_at to help the backend (format: YYYY-MM-DD HH:MM:SS)
